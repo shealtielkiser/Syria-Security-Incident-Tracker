@@ -1,3 +1,5 @@
+#Normalizes API respondse into consistent internal format
+
 def parse_incidents(incident_data):
     parsed_incidents=[]
     for incident in incident_data:

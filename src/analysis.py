@@ -1,3 +1,5 @@
+#Computes summary statistics from parsed incident data
+
 def summarize_incidents(parsed_incidents):
     """Summarize the parsed incident data by counting the number of incidents per event type.
     Args:
@@ -13,6 +15,17 @@ def summarize_incidents(parsed_incidents):
     fatality_count=0
     
     incident_count=len(parsed_incidents)
+
+#Return early when no incidents are available so the dashboard
+#can display a "no activity" message instead of empty statistics
+    if incident_count == 0:
+        summary={"total incidents":0,
+                "total fatalities": 0,
+                "most common actor": [],
+                "most common event type": [],
+                "most common governorate": []}
+        return summary
+        
     summary["total incidents"] = incident_count
 
     for incident in parsed_incidents:
@@ -24,6 +37,9 @@ def summarize_incidents(parsed_incidents):
         if event_type not in event_counts:
             event_counts[event_type] = 0
         event_counts[event_type] += 1
+
+#Multiple values may tie for highest frequency
+#Preserve all tied values instead of choosing one arbitrarily
     most_common_event_count =[]
     max_event=max(event_counts.values())
     for event_type, count in event_counts.items():
@@ -55,7 +71,5 @@ def summarize_incidents(parsed_incidents):
         if count == max_actor_count:
             most_common_actor.append(actor)
     summary["most common actor"] = most_common_actor
-
+        
     return summary
-
-
