@@ -5,7 +5,7 @@ An open-source intelligence (OSINT) application that retrieves, analyzes, and su
 
 ## Project Overview
 
-This Python-based OSINT application retrieves recent conflict data from the ACLED API. After retrieval, the application parses relevant incident fields, and analyzes key indicators of conflict activity. The results are presented in an intelligence-style dashboard that summarizes recent security developments in Syria. This project demonstrates how Python can automate the retrieval, processing, and analysis of open-source conflict data to support rapid situational awareness.
+This project authenticates with the ACLED API, retrieves recent conflict events, parses relevant incident fields, analyzes key indicators of conflict activity, and presents the results in an intelligence-style dashboard. It is designed to support rapid situational awareness through the synthesis of large-scale conflict datasets.
 
 ## Data Source
 
