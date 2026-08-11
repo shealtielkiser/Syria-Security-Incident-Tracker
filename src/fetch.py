@@ -1,6 +1,10 @@
 #Communicates with ACLED API and retrieves incident data
 
 #Third party libraries
+from urllib import response
+
+from urllib import response
+
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import os
@@ -49,6 +53,47 @@ def authenticate():
         "The ACLED server may be unavailable. Please try again later. \n"
         f"Status code: {response.status_code}")
 
+def get_page(session, url, params):
+    """
+    Retry failed requests to tolerate network or API issues.
+
+    Args:
+        session (requests.Session): An authenticated session object.
+        url (str): The URL of the ACLED API endpoint.
+        params (dict): The query parameters for the request.
+
+    Returns:
+        dict: The JSON response from the ACLED API.
+
+    Raises:
+        Exception: If the request fails after all retry attempts.
+    """
+
+    
+    for attempt in range(1, 4):
+        try:
+            response = session.get(url, params=params)
+            if response.status_code == 200:
+                return response
+        except requests.RequestException as error:
+            print(error)
+            raise Exception(f"Unable to contact ACLED API. Please check your internet connection.") from error
+
+        if response.status_code == 200:
+            incident_data = response.json()
+            return incident_data
+                   
+        elif 400 <= response.status_code < 500:
+            error = response.json()
+            message = error.get("message", "Unknown client error.")
+            raise Exception(message)
+    
+        elif 500 <= response.status_code:
+             if attempt == 3:
+                raise Exception(f"Request failed after {attempt} attempts. \n"
+                                "The ACLED server may be unavailable. Please try again later. \n"
+                                f"Status code: {response.status_code}")
+
 def retrieve_incidents(session):
     """Retrieve the last 7 days of security incidents from the ACLED API
     Returns:
@@ -56,37 +101,32 @@ def retrieve_incidents(session):
     Raises:
         Exception: If request fails after all retry attempts
     """
-    
-
-    start_date = "2025-07-01"
-    end_date = "2025-07-08"
+    start_date = "2024-07-21"
+    end_date = "2025-07-28"
     url = "https://acleddata.com/api/acled/read?_format=json"
     params = {"country": "Syria",
-              "event_date": f"{start_date}|{end_date}", 
-              "event_date_where": "BETWEEN",
-              "fields": "event_date|event_type|admin1|actor1|fatalities",}
+            "event_date": f"{start_date}|{end_date}", 
+            "event_date_where": "BETWEEN",
+            "fields": "event_date|event_type|admin1|actor1|fatalities",
+            "page":1}
+    params["page"] = 1
+    all_incidents = []
+
+    while True:
+        response = get_page(session, url, params)
+        incident_data = response.json()
+
+        all_incidents.extend(incident_data["data"])
+
+        if len(incident_data["data"]) < 5000:
+            break
+
+        params["page"] += 1
+
+    incident_data["start date"]=start_date
+    incident_data["end date"]= end_date
+    incident_data["data"] = all_incidents
     
-#Retry failed connections to tolerate network or API issues
-    for attempt in range(1, 4): 
-        try:
-            response = session.get(url, params=params)
-        except requests.RequestException as error:
-            raise Exception(f"Unable to contact ACLED API. Please check your internet connection.") from error
-
-        if response.status_code == 200:
-            incident_data = response.json()
-            incident_data["start date"]=start_date
-            incident_data["end date"]= end_date
-            return incident_data
-
-        elif 400 <= response.status_code < 500:
-            error = response.json()
-            message = error.get("message", "Unknown client error.")
-            raise Exception(message)
-        elif 500 <= response.status_code:
-             continue  
-    raise Exception(f"Request failed after {attempt} attempts. \n"
-        "The ACLED server may be unavailable. Please try again later. \n"
-        f"Status code: {response.status_code}")
+    return incident_data
     
     
