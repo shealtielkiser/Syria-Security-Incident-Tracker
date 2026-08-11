@@ -28,13 +28,15 @@ https://acleddata.com
 ## Capabilities
 
 - Authenticates with the ACLED API using secure environment variables.
-- Retrieves recent conflict event data for Syria.
+- Retrieves conflict event data for Syria.
+- Automatically retries transient network failures.
+- Automatically paginates API responses exceeding ACLED's 5,000-record limit.
 - Parses key incident fields into a standardized internal format.
 - Summarizes conflict activity through aggregate statistics.
 - Identifies the most common event types, governorates, and actors.
 - Calculates total reported fatalities and incident counts.
 - Presents findings in an intelligence-style command-line dashboard.
-- Gracefully handles periods with no reported incidents.
+- Gracefully handles reporting periods with no reported incidents.
 
 ## Installation
 
